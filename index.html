@@ -7,16 +7,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <style>
+        * { box-sizing: border-box; }
         body { background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; box-sizing: border-box; font-size: 15px; }
+        input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 15px; }
         input:focus { outline: none; border-color: #00e5ff; }
         button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(90deg, #0083b0, #00b4db); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         button:hover { transform: translateY(-2px); background: linear-gradient(90deg, #005f87, #0083b0); }
         .social-login { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px; }
         .social-btn { width: 40px; height: 40px; cursor: pointer; background: #fff; padding: 8px; border-radius: 50%; transition: 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
-        .error { color: #ff5252; font-size: 14px; margin-top: 10px; font-weight: bold; }
+        .error { color: #ff5252; font-size: 13px; margin-top: 10px; font-weight: bold; word-break: break-word; }
         .hidden { display: none !important; }
         h2 { color: #00e5ff; margin-bottom: 20px; letter-spacing: 1px; }
         p { color: #ccc; font-size: 14px; }
@@ -54,7 +55,7 @@
     </div>
 
     <script>
-        // Senin Firebase Config Bilgilerin
+        // Firebase Yapılandırma Bilgilerin
         const firebaseConfig = {
             apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
             authDomain: "antonow-bot.firebaseapp.com",
@@ -65,18 +66,19 @@
             measurementId: "G-1TS5GEWDX4"
         };
         
+        // Oturum kalıcılığını yerel olarak ayarla (sayfa yenilenince atmaz)
         firebase.initializeApp(firebaseConfig);
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-        // Kullanıcı giriş durumunu takip eden sistem (Sayfa açıldığında veya giriş yapıldığında çalışır)
+        // Kullanıcı giriş kontrolü
         firebase.auth().onAuthStateChanged((user) => {
             const errorDiv = document.getElementById('error-msg');
-            errorDiv.innerText = ""; // Hataları temizle
+            errorDiv.innerText = ""; 
 
             if (user) {
-                // Giriş yapıldı, giriş kartını gizle
                 document.getElementById('login-card').classList.add('hidden');
                 
-                // Admin kontrolü
+                // Admin Yönlendirmesi
                 if (user.email === "ruslanantonovow6837@rambler.ru") {
                     document.getElementById('admin-card').classList.remove('hidden');
                     document.getElementById('user-card').classList.add('hidden');
@@ -85,21 +87,20 @@
                     document.getElementById('admin-card').classList.add('hidden');
                 }
             } else {
-                // Kimse giriş yapmamış, sadece ana giriş kartını göster
                 document.getElementById('login-card').classList.remove('hidden');
                 document.getElementById('admin-card').classList.add('hidden');
                 document.getElementById('user-card').classList.add('hidden');
             }
         });
 
-        // E-posta ile Giriş Fonksiyonu
+        // E-posta Girişi
         function emailLogin() {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
             const errorDiv = document.getElementById('error-msg');
             
             if(!email || !pass) {
-                errorDiv.innerText = "Lütfen boş alan bırakma kanka!";
+                errorDiv.innerText = "Lütfen boş alan bırakma kanka.";
                 return;
             }
 
@@ -109,7 +110,7 @@
             });
         }
 
-        // Google ile Giriş Fonksiyonu
+        // Google Girişi (Popup - Tarayıcında pop-up engelleyici kapalı olmalı)
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider)
@@ -118,21 +119,20 @@
             });
         }
 
-        // Çıkış Yap Fonksiyonu
+        // Çıkış
         function cikisYap() {
             firebase.auth().signOut();
         }
 
-        // Admin APK Kaydetme Yeri
+        // Admin Link Güncelleme
         function apkYukle() {
             const link = document.getElementById('apkLink').value;
             if(!link) {
-                alert("Lütfen bir link girin.");
+                alert("Lütfen bir link girin patron.");
                 return;
             }
-            // Normal kullanıcının indireceği butona bu linki bağlıyoruz
             document.getElementById('indirBtn').href = link;
-            alert("APK Linki başarıyla güncellendi ve kaydedildi!");
+            alert("APK Linki başarıyla kaydedildi!");
         }
     </script>
 </body>
