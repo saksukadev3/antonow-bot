@@ -1,11 +1,139 @@
-// Giriş Başarılı Olduğunda (Google veya Mail)
-firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    // Admin mi diye kontrol et
-    if (user.email === "ruslanantonovow6837@rambler.ru") {
-      window.location.href = "admin.html"; // Admin paneline git
-    } else {
-      window.location.href = "dashboard.html"; // Normal kullanıcı paneline git
-    }
-  }
-});
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RXC STORE</title>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <style>
+        body { background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; box-sizing: border-box; font-size: 15px; }
+        input:focus { outline: none; border-color: #00e5ff; }
+        button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(90deg, #0083b0, #00b4db); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        button:hover { transform: translateY(-2px); background: linear-gradient(90deg, #005f87, #0083b0); }
+        .social-login { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px; }
+        .social-btn { width: 40px; height: 40px; cursor: pointer; background: #fff; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .social-btn:hover { transform: scale(1.1); }
+        .error { color: #ff5252; font-size: 14px; margin-top: 10px; font-weight: bold; }
+        .hidden { display: none !important; }
+        h2 { color: #00e5ff; margin-bottom: 20px; letter-spacing: 1px; }
+        p { color: #ccc; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-card" class="card">
+        <h2>RXC STORE GİRİŞ</h2>
+        <input type="email" id="email" placeholder="E-posta adresini gir">
+        <input type="password" id="pass" placeholder="Şifreni gir">
+        <button onclick="emailLogin()">MAİL İLE GİRİŞ YAP</button>
+        
+        <div class="social-login">
+            <span style="color:#888; font-size:13px;">Veya:</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="social-btn" onclick="googleLogin()" title="Google ile Giriş">
+        </div>
+        <div id="error-msg" class="error"></div>
+    </div>
+
+    <div id="admin-card" class="card hidden">
+        <h2>👑 ADMİN PANELİ</h2>
+        <p>Sisteme Hoş Geldin, Patron.</p>
+        <input type="text" id="apkLink" placeholder="Yüklenecek APK Linkini yapıştır">
+        <button onclick="apkYukle()">APK LİNKİNİ ONAYLA</button>
+        <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 15px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
+    </div>
+
+    <div id="user-card" class="card hidden">
+        <h2>🛍️ RXC MAĞAZA</h2>
+        <p>Giriş Başarılı!</p>
+        <p style="margin: 20px 0;">İndirilebilir Güncel Dosya:</p>
+        <a id="indirBtn" href="#" target="_blank" style="display:block; padding: 14px; background:#00e5ff; color:#000; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">APK İNDİR</a>
+        <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 20px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
+    </div>
+
+    <script>
+        // Senin Firebase Config Bilgilerin
+        const firebaseConfig = {
+            apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
+            authDomain: "antonow-bot.firebaseapp.com",
+            projectId: "antonow-bot",
+            storageBucket: "antonow-bot.firebasestorage.app",
+            messagingSenderId: "883455416719",
+            appId: "1:883455416719:web:57a4a65e4c32b99e3393fa",
+            measurementId: "G-1TS5GEWDX4"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+
+        // Kullanıcı giriş durumunu takip eden sistem (Sayfa açıldığında veya giriş yapıldığında çalışır)
+        firebase.auth().onAuthStateChanged((user) => {
+            const errorDiv = document.getElementById('error-msg');
+            errorDiv.innerText = ""; // Hataları temizle
+
+            if (user) {
+                // Giriş yapıldı, giriş kartını gizle
+                document.getElementById('login-card').classList.add('hidden');
+                
+                // Admin kontrolü
+                if (user.email === "ruslanantonovow6837@rambler.ru") {
+                    document.getElementById('admin-card').classList.remove('hidden');
+                    document.getElementById('user-card').classList.add('hidden');
+                } else {
+                    document.getElementById('user-card').classList.remove('hidden');
+                    document.getElementById('admin-card').classList.add('hidden');
+                }
+            } else {
+                // Kimse giriş yapmamış, sadece ana giriş kartını göster
+                document.getElementById('login-card').classList.remove('hidden');
+                document.getElementById('admin-card').classList.add('hidden');
+                document.getElementById('user-card').classList.add('hidden');
+            }
+        });
+
+        // E-posta ile Giriş Fonksiyonu
+        function emailLogin() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            const errorDiv = document.getElementById('error-msg');
+            
+            if(!email || !pass) {
+                errorDiv.innerText = "Lütfen boş alan bırakma kanka!";
+                return;
+            }
+
+            firebase.auth().signInWithEmailAndPassword(email, pass)
+            .catch((error) => {
+                errorDiv.innerText = "Hata: " + error.message;
+            });
+        }
+
+        // Google ile Giriş Fonksiyonu
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+            .catch((error) => {
+                document.getElementById('error-msg').innerText = "Google Hatası: " + error.message;
+            });
+        }
+
+        // Çıkış Yap Fonksiyonu
+        function cikisYap() {
+            firebase.auth().signOut();
+        }
+
+        // Admin APK Kaydetme Yeri
+        function apkYukle() {
+            const link = document.getElementById('apkLink').value;
+            if(!link) {
+                alert("Lütfen bir link girin.");
+                return;
+            }
+            // Normal kullanıcının indireceği butona bu linki bağlıyoruz
+            document.getElementById('indirBtn').href = link;
+            alert("APK Linki başarıyla güncellendi ve kaydedildi!");
+        }
+    </script>
+</body>
+</html>
