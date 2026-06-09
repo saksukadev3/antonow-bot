@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: url('https://cdn.phototourl.com/free/2026-06-08-51776ff5-0bc0-4b83-88fc-6090cd2aac9b.png') no-repeat center center fixed; background-size: cover; color: white; font-family: sans-serif; }
+        
+        /* GİRİŞ KUTUSU */
+        .login-box { background: rgba(0,0,0,0.85); width: 350px; padding: 30px; margin: 100px auto; border-radius: 20px; text-align: center; border: 1px solid #444; }
+        .login-btn { width: 100%; padding: 12px; margin: 10px 0; background: #222; color: white; border: 1px solid #555; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .login-btn img { width: 24px; }
+
+        /* MAĞAZA ARAYÜZÜ (Giriş sonrası) */
+        #store-ui { display: none; }
+        .header { background: rgba(0,0,0,0.9); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .apk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="login-box">
+    <h2>RXC STORE</h2>
+    <p>Kaydol / Giriş Yap</p>
+    
+    <button class="login-btn" onclick="googleLogin()">
+        <img src="https://cdn.phototourl.com/free/2026-06-08-fe8dfe12-9b1d-4252-902e-d8c1b11f6cc9.jpg"> Google ile devam et
+    </button>
+    <button class="login-btn" onclick="mailLogin()">
+        <img src="https://cdn.phototourl.com/free/2026-06-08-7d9bfad0-e01a-44af-ad03-460936be229a.jpg"> Mail ile devam et
+    </button>
+</div>
+
+<div id="store-ui">
+    <div class="header">
+        <h2>RXC STORE</h2>
+        <div id="profile-area"></div>
+    </div>
+    <div class="apk-grid" id="apk-list">
+        </div>
+</div>
+
+<script>
+    // Giriş yapınca login-screen'i gizle, store-ui'yi göster
+    function showStore() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('store-ui').style.display = 'block';
+    }
+    
+    // Google giriş fonksiyonu (Donma yapmaz)
+    function googleLogin() {
+        // Buraya firebase auth kodlarını bağlayacağız
+        showStore(); // Test için direkt açıyorum
+    }
+</script>
+</body>
+</html>
