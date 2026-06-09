@@ -9,33 +9,38 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 15px; }
-        input:focus, select:focus { outline: none; border-color: #00e5ff; }
+        body { background: #ffffff; color: #000000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .card { background: #f9f9f9; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #dddddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #bbbbbb; background: #ffffff; color: #000000; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #0083b0; }
         button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(90deg, #0083b0, #00b4db); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         button:hover { transform: translateY(-2px); background: linear-gradient(90deg, #005f87, #0083b0); }
         .social-login { display: flex; justify-content: center; align-items: center; margin-top: 15px; gap: 15px; }
-        .social-btn { width: 40px; height: 40px; cursor: pointer; background: #fff; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .social-btn { width: 40px; height: 40px; cursor: pointer; background: #ffffff; padding: 8px; border-radius: 50%; border: 1px solid #cccccc; transition: 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
-        .error { color: #ff5252; font-size: 13px; margin-top: 10px; font-weight: bold; }
+        .error { color: #d32f2f; font-size: 13px; margin-top: 10px; font-weight: bold; }
         .hidden { display: none !important; }
-        h2 { color: #00e5ff; margin-bottom: 15px; }
-        p { color: #ccc; font-size: 14px; }
-        .toggle-text { background: #2a085c; color: #00e5ff; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-bottom: 15px; border: 1px solid #005f87; }
-        .profile-top { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 6px; border: 2px solid #00e5ff; object-fit: cover; background: #2a2a2a; }
-        .role-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #000; margin-bottom: 10px; }
-        .role-uye { background: #ff5252; color: #fff; }
-        .role-mod { background: #ffd700; color: #000; }
-        .role-yonetici { background: #00e5ff; color: #000; }
-        .user-list { text-align: left; max-height: 150px; overflow-y: auto; background: #111; padding: 10px; border-radius: 6px; font-size: 12px; margin: 10px 0; }
-        .user-item { border-bottom: 1px solid #333; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
-        .apk-box { border: 1px solid #444; background: #262626; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: left; }
+        h2 { color: #005f87; margin-bottom: 15px; }
+        p { color: #444444; font-size: 14px; }
+        .toggle-text { background: #e0f7fc; color: #006064; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-bottom: 15px; border: 1px solid #00acc1; }
+        .profile-top { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 6px; border: 2px solid #00b4db; object-fit: cover; background: #ffffff; }
+        .role-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #ffffff; margin-bottom: 10px; }
+        .role-uye { background: #d32f2f; }
+        .role-mod { background: #fbc02d; color: #000000; }
+        .role-yonetici { background: #00bcd4; color: #000000; }
+        .user-list { text-align: left; max-height: 150px; overflow-y: auto; background: #eeeeee; padding: 10px; border-radius: 6px; font-size: 12px; margin: 10px 0; border: 1px solid #cccccc; color: #000; }
+        .user-item { border-bottom: 1px solid #aaaaaa; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+        .apk-box { border: 1px solid #bbbbbb; background: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div id="auth-card" class="card">
+    <div id="loading-card" class="card">
+        <h2>Yükleniyor...</h2>
+        <p>RXC Store hazırlanıyor, lütfen bekleyin.</p>
+    </div>
+
+    <div id="auth-card" class="card hidden">
         <div id="banner-text" class="toggle-text">RXC SHOP EN GÜVENLİ APK</div>
         <h2 id="auth-title">KAYIT OL</h2>
         
@@ -51,21 +56,21 @@
         <button id="auth-btn" onclick="kayitOlAction()">KAYIT OL</button>
         
         <div class="social-login">
-            <span style="color:#888; font-size:12px;">Veya:</span>
+            <span style="color:#666666; font-size:12px;">Veya:</span>
             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="social-btn" onclick="googleLogin()" title="Google ile Devam Et">
         </div>
         
-        <p id="toggle-link" style="cursor:pointer; color:#00e5ff; margin-top:15px;" onclick="geisYapModunaGec()">Zaten hesabın var mı? **Giriş Yap**</p>
+        <p id="toggle-link" style="cursor:pointer; color:#0083b0; margin-top:15px;" onclick="geisYapModunaGec()">Zaten hesabın var mı? <b>Giriş Yap</b></p>
         <div id="error-msg" class="error"></div>
     </div>
 
     <div id="user-card" class="card hidden">
         <img id="user-profile-img" class="profile-top" src="" alt="Profil">
         <h2>🛍️ RXC MAĞAZA</h2>
-        <div id="user-role-badge" class="role-badge">ÜYE</div>
+        <div id="user-role-badge" class="role-badge role-uye">ÜYE</div>
         <p>Hoş geldin, <span id="user-username">Kullanıcı</span>!</p>
         
-        <div style="margin: 15px 0;">İndirilebilir Uygulamalar:</div>
+        <div style="margin: 15px 0; font-weight: bold;">İndirilebilir Uygulamalar:</div>
         <div id="apk-list-area" style="max-height: 200px; overflow-y: auto;"></div>
 
         <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 15px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
@@ -74,7 +79,7 @@
     <div id="admin-card" class="card hidden" style="max-width: 500px;">
         <img id="admin-profile-img" class="profile-top" src="" alt="Profil">
         <h2>👑 YÖNETİCİ PANELİ</h2>
-        <div class="role-yonetici" style="display:inline-block; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:12px;">YÖNETİCİ (MAVİ TİK)</div>
+        <div class="role-yonetici" style="display:inline-block; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:12px; margin-bottom: 10px;">YÖNETİCİ (MAVİ TİK)</div>
         
         <button style="background:#2e7d32; margin: 15px 0;" onclick="toggleUserList()">🟢 ÜYELER VE YETKİ ATAMA</button>
         <div id="user-list-box" class="user-list hidden">
@@ -83,9 +88,9 @@
         </div>
 
         <div class="apk-box">
-            <h3 style="margin:0 0 10px 0; color:#00e5ff;">+ Yeni APK Ekle</h3>
+            <h3 style="margin:0 0 10px 0; color:#005f87;">+ Yeni APK Ekle</h3>
             <input type="text" id="apk-ad" placeholder="Uygulama Adı">
-            <p style="margin:5px 0 2px 0; font-size:12px;">Uygulama Profili (Resim):</p>
+            <p style="margin:5px 0 2px 0; font-size:12px; color:#000;">Uygulama Profili (Resim):</p>
             <input type="file" id="apk-resim" accept="image/*">
             <input type="text" id="apk-link" placeholder="Mediafire İndirme Linki">
             <input type="text" id="apk-surum" placeholder="Sürüm (Örn: 1.0.0)">
@@ -106,7 +111,9 @@
             measurementId: "G-1TS5GEWDX4"
         };
         
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
         
         let isLoginMode = false;
@@ -157,6 +164,8 @@
 
         // Oturum Kontrolü
         firebase.auth().onAuthStateChanged((user) => {
+            document.getElementById('loading-card').classList.add('hidden');
+            
             if(user) {
                 document.getElementById('auth-card').classList.add('hidden');
                 
@@ -190,6 +199,9 @@
                         badge.className = "role-badge " + (role === "MODERATÖR" ? "role-mod" : "role-uye");
                     }
                     apkListesiniGuncelle();
+                }).catch(() => {
+                    // Hata durumunda yüklemeyi atla ve giriş ekranını göster
+                    document.getElementById('auth-card').classList.remove('hidden');
                 });
 
             } else {
@@ -255,10 +267,10 @@
                     const maskEmail = u.email ? u.email.charAt(0) + "*******@" + u.email.split('@')[1] : "";
                     
                     let row = `<div class="user-item">
-                        <div>👤 <b>${u.username}</b><br><span style="font-size:10px; color:#aaa;">${maskEmail}</span></div>
+                        <div>👤 <b>${u.username}</b><br><span style="font-size:10px; color:#555;">${maskEmail}</span></div>
                         <div>
                             Rol: <b>${u.rol}</b><br>
-                            <select onchange="rolDegistir('${doc.id}', this.value)">
+                            <select style="padding: 4px; font-size:11px;" onchange="rolDegistir('${doc.id}', this.value)">
                                 <option value="${u.rol}">Değiştir...</option>
                                 <option value="ÜYE">Üye Yap</option>
                                 <option value="MODERATÖR">Moderatör Yap</option>
@@ -306,13 +318,13 @@
             db.collection("apklar").get().then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     const apk = doc.data();
-                    let item = `<div style="background:#2a2a2a; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
-                        <img src="${apk.resim}" style="width:40px; height:40px; border-radius:4px;">
-                        <div style="text-align:left; width: 140px;">
+                    let item = `<div style="background:#eeeeee; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; border:1px solid #dddddd;">
+                        <img src="${apk.resim}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+                        <div style="text-align:left; width: 140px; color: #000;">
                             <div style="font-weight:bold; font-size:13px;">${apk.ad}</div>
-                            <div style="font-size:10px; color:#aaa;">Sürüm: ${apk.surum} | ${apk.tarih}</div>
+                            <div style="font-size:10px; color:#555;">Sürüm: ${apk.surum} | ${apk.tarih}</div>
                         </div>
-                        <a href="${apk.link}" target="_blank" style="padding:6px 12px; background:#00e5ff; color:#000; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">İNDİR</a>
+                        <a href="${apk.link}" target="_blank" style="padding:6px 12px; background:#00b4db; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">İNDİR</a>
                     </div>`;
                     listArea.innerHTML += item;
                 });
