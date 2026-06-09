@@ -6,56 +6,96 @@
     <title>RXC STORE</title>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 15px; }
-        input:focus { outline: none; border-color: #00e5ff; }
+        body { background: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #00e5ff; }
         button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(90deg, #0083b0, #00b4db); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         button:hover { transform: translateY(-2px); background: linear-gradient(90deg, #005f87, #0083b0); }
-        .social-login { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 15px; }
+        .social-login { display: flex; justify-content: center; align-items: center; margin-top: 15px; gap: 15px; }
         .social-btn { width: 40px; height: 40px; cursor: pointer; background: #fff; padding: 8px; border-radius: 50%; transition: 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
-        .error { color: #ff5252; font-size: 13px; margin-top: 10px; font-weight: bold; word-break: break-word; }
+        .error { color: #ff5252; font-size: 13px; margin-top: 10px; font-weight: bold; }
         .hidden { display: none !important; }
-        h2 { color: #00e5ff; margin-bottom: 20px; letter-spacing: 1px; }
+        h2 { color: #00e5ff; margin-bottom: 15px; }
         p { color: #ccc; font-size: 14px; }
+        .toggle-text { background: #2a085c; color: #00e5ff; padding: 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-bottom: 15px; border: 1px solid #005f87; }
+        .profile-top { position: absolute; top: 15px; right: 15px; width: 45px; height: 45px; border-radius: 6px; border: 2px solid #00e5ff; object-fit: cover; background: #2a2a2a; }
+        .role-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #000; margin-bottom: 10px; }
+        .role-uye { background: #ff5252; color: #fff; }
+        .role-mod { background: #ffd700; color: #000; }
+        .role-yonetici { background: #00e5ff; color: #000; }
+        .user-list { text-align: left; max-height: 150px; overflow-y: auto; background: #111; padding: 10px; border-radius: 6px; font-size: 12px; margin: 10px 0; }
+        .user-item { border-bottom: 1px solid #333; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+        .apk-box { border: 1px solid #444; background: #262626; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div id="login-card" class="card">
-        <h2>RXC STORE GİRİŞ</h2>
-        <input type="email" id="email" placeholder="E-posta adresini gir">
-        <input type="password" id="pass" placeholder="Şifreni gir">
-        <button onclick="emailLogin()">MAİL İLE GİRİŞ YAP</button>
+    <div id="auth-card" class="card">
+        <div id="banner-text" class="toggle-text">RXC SHOP EN GÜVENLİ APK</div>
+        <h2 id="auth-title">KAYIT OL</h2>
+        
+        <input type="text" id="reg-username" placeholder="Kullanıcı adı" class="hidden">
+        <input type="email" id="email" placeholder="E-posta adresi">
+        <input type="password" id="pass" placeholder="Şifre">
+        
+        <div id="photo-area" class="hidden" style="text-align: left; margin: 10px 0;">
+            <p style="margin:0 0 5px 0; font-size: 13px;">Profil Fotoğrafı Seç:</p>
+            <input type="file" id="reg-photo" accept="image/*">
+        </div>
+
+        <button id="auth-btn" onclick="kayitOlAction()">KAYIT OL</button>
         
         <div class="social-login">
-            <span style="color:#888; font-size:13px;">Veya:</span>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="social-btn" onclick="googleLogin()" title="Google ile Giriş">
+            <span style="color:#888; font-size:12px;">Veya:</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="social-btn" onclick="googleLogin()" title="Google ile Devam Et">
         </div>
+        
+        <p id="toggle-link" style="cursor:pointer; color:#00e5ff; margin-top:15px;" onclick="geisYapModunaGec()">Zaten hesabın var mı? **Giriş Yap**</p>
         <div id="error-msg" class="error"></div>
     </div>
 
-    <div id="admin-card" class="card hidden">
-        <h2>👑 ADMİN PANELİ</h2>
-        <p>Sisteme Hoş Geldin, Patron.</p>
-        <input type="text" id="apkLink" placeholder="Yüklenecek APK Linkini yapıştır">
-        <button onclick="apkYukle()">APK LİNKİNİ ONAYLA</button>
+    <div id="user-card" class="card hidden">
+        <img id="user-profile-img" class="profile-top" src="" alt="Profil">
+        <h2>🛍️ RXC MAĞAZA</h2>
+        <div id="user-role-badge" class="role-badge">ÜYE</div>
+        <p>Hoş geldin, <span id="user-username">Kullanıcı</span>!</p>
+        
+        <div style="margin: 15px 0;">İndirilebilir Uygulamalar:</div>
+        <div id="apk-list-area" style="max-height: 200px; overflow-y: auto;"></div>
+
         <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 15px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
     </div>
 
-    <div id="user-card" class="card hidden">
-        <h2>🛍️ RXC MAĞAZA</h2>
-        <p>Giriş Başarılı!</p>
-        <p style="margin: 20px 0;">İndirilebilir Güncel Dosya:</p>
-        <a id="indirBtn" href="#" target="_blank" style="display:block; padding: 14px; background:#00e5ff; color:#000; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">APK İNDİR</a>
-        <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 20px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
+    <div id="admin-card" class="card hidden" style="max-width: 500px;">
+        <img id="admin-profile-img" class="profile-top" src="" alt="Profil">
+        <h2>👑 YÖNETİCİ PANELİ</h2>
+        <div class="role-yonetici" style="display:inline-block; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:12px;">YÖNETİCİ (MAVİ TİK)</div>
+        
+        <button style="background:#2e7d32; margin: 15px 0;" onclick="toggleUserList()">🟢 ÜYELER VE YETKİ ATAMA</button>
+        <div id="user-list-box" class="user-list hidden">
+            <strong>Kayıtlı Üyeler:</strong>
+            <div id="user-list-container"></div>
+        </div>
+
+        <div class="apk-box">
+            <h3 style="margin:0 0 10px 0; color:#00e5ff;">+ Yeni APK Ekle</h3>
+            <input type="text" id="apk-ad" placeholder="Uygulama Adı">
+            <p style="margin:5px 0 2px 0; font-size:12px;">Uygulama Profili (Resim):</p>
+            <input type="file" id="apk-resim" accept="image/*">
+            <input type="text" id="apk-link" placeholder="Mediafire İndirme Linki">
+            <input type="text" id="apk-surum" placeholder="Sürüm (Örn: 1.0.0)">
+            <button onclick="apkEkle()">APK YÜKLE</button>
+        </div>
+
+        <button style="background: linear-gradient(90deg, #d32f2f, #b71c1c); margin-top: 15px;" onclick="cikisYap()">ÇIKIŞ YAP</button>
     </div>
 
     <script>
-        // Firebase Yapılandırma Bilgilerin
         const firebaseConfig = {
             apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
             authDomain: "antonow-bot.firebaseapp.com",
@@ -66,73 +106,217 @@
             measurementId: "G-1TS5GEWDX4"
         };
         
-        // Oturum kalıcılığını yerel olarak ayarla (sayfa yenilenince atmaz)
         firebase.initializeApp(firebaseConfig);
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const db = firebase.firestore();
+        
+        let isLoginMode = false;
+        let uploadedPhotoBase64 = "";
+        let apkPhotoBase64 = "";
 
-        // Kullanıcı giriş kontrolü
-        firebase.auth().onAuthStateChanged((user) => {
-            const errorDiv = document.getElementById('error-msg');
-            errorDiv.innerText = ""; 
-
-            if (user) {
-                document.getElementById('login-card').classList.add('hidden');
-                
-                // Admin Yönlendirmesi
-                if (user.email === "ruslanantonovow6837@rambler.ru") {
-                    document.getElementById('admin-card').classList.remove('hidden');
-                    document.getElementById('user-card').classList.add('hidden');
-                } else {
-                    document.getElementById('user-card').classList.remove('hidden');
-                    document.getElementById('admin-card').classList.add('hidden');
-                }
-            } else {
-                document.getElementById('login-card').classList.remove('hidden');
-                document.getElementById('admin-card').classList.add('hidden');
-                document.getElementById('user-card').classList.add('hidden');
+        // Fotoğraf okuyucu
+        document.getElementById('reg-photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) { uploadedPhotoBase64 = evt.target.result; }
+                reader.readAsDataURL(file);
             }
         });
 
-        // E-posta Girişi
-        function emailLogin() {
+        document.getElementById('apk-resim').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) { apkPhotoBase64 = evt.target.result; }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function geisYapModunaGec() {
+            isLoginMode = !isLoginMode;
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('auth-btn');
+            const toggle = document.getElementById('toggle-link');
+            const userField = document.getElementById('reg-username');
+            const photoArea = document.getElementById('photo-area');
+
+            if(isLoginMode) {
+                title.innerText = "GİRİŞ YAP";
+                btn.innerText = "GİRİŞ YAP";
+                toggle.innerHTML = "Hesabın yok mu? <b>Kayıt Ol</b>";
+                userField.classList.add('hidden');
+                photoArea.classList.add('hidden');
+            } else {
+                title.innerText = "KAYIT OL";
+                btn.innerText = "KAYIT OL";
+                toggle.innerHTML = "Zaten hesabın var mı? <b>Giriş Yap</b>";
+                userField.classList.remove('hidden');
+                photoArea.classList.remove('hidden');
+            }
+        }
+
+        // Oturum Kontrolü
+        firebase.auth().onAuthStateChanged((user) => {
+            if(user) {
+                document.getElementById('auth-card').classList.add('hidden');
+                
+                // Veritabanından kullanıcı bilgilerini çek
+                db.collection("kullanicilar").doc(user.uid).get().then((doc) => {
+                    let role = "ÜYE";
+                    let username = user.displayName || "Kullanıcı";
+                    let photo = user.photoURL || uploadedPhotoBase64 || "https://via.placeholder.com/150";
+
+                    if (doc.exists) {
+                        role = doc.data().rol || "ÜYE";
+                        username = doc.data().username || username;
+                        photo = doc.data().photo || photo;
+                    }
+
+                    // Yönetici (Admin) Kontrolü
+                    if(user.email === "ruslanantonovow6837@rambler.ru" || role === "YÖNETİCİ") {
+                        document.getElementById('admin-card').classList.remove('hidden');
+                        document.getElementById('user-card').classList.add('hidden');
+                        document.getElementById('admin-profile-img').src = photo;
+                        yukleKullaniciListesi();
+                    } else {
+                        document.getElementById('user-card').classList.remove('hidden');
+                        document.getElementById('admin-card').classList.add('hidden');
+                        document.getElementById('user-profile-img').src = photo;
+                        document.getElementById('user-username').innerText = username;
+                        
+                        // Rozet atama
+                        const badge = document.getElementById('user-role-badge');
+                        badge.innerText = role;
+                        badge.className = "role-badge " + (role === "MODERATÖR" ? "role-mod" : "role-uye");
+                    }
+                    apkListesiniGuncelle();
+                });
+
+            } else {
+                document.getElementById('auth-card').classList.remove('hidden');
+                document.getElementById('user-card').classList.add('hidden');
+                document.getElementById('admin-card').classList.add('hidden');
+            }
+        });
+
+        function kayitOlAction() {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
-            const errorDiv = document.getElementById('error-msg');
-            
-            if(!email || !pass) {
-                errorDiv.innerText = "Lütfen boş alan bırakma kanka.";
-                return;
-            }
+            const username = document.getElementById('reg-username').value;
+            const err = document.getElementById('error-msg');
 
-            firebase.auth().signInWithEmailAndPassword(email, pass)
-            .catch((error) => {
-                errorDiv.innerText = "Hata: " + error.message;
-            });
+            if(isLoginMode) {
+                // Giriş Yapma Modu
+                firebase.auth().signInWithEmailAndPassword(email, pass).catch(e => err.innerText = e.message);
+            } else {
+                // Kayıt Olma Modu
+                if(!username || !email || !pass) { err.innerText = "Lütfen tüm alanları doldur!"; return;}
+                firebase.auth().createUserWithEmailAndPassword(email, pass).then((cred) => {
+                    // Firestore'a kaydet
+                    db.collection("kullanicilar").doc(cred.user.uid).set({
+                        username: username,
+                        email: email,
+                        rol: (email === "ruslanantonovow6837@rambler.ru" ? "YÖNETİCİ" : "ÜYE"),
+                        photo: uploadedPhotoBase64 || "https://via.placeholder.com/150"
+                    });
+                }).catch(e => err.innerText = e.message);
+            }
         }
 
-        // Google Girişi (Popup - Tarayıcında pop-up engelleyici kapalı olmalı)
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-            .catch((error) => {
-                document.getElementById('error-msg').innerText = "Google Hatası: " + error.message;
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                const user = result.user;
+                if(!isLoginMode) {
+                    db.collection("kullanicilar").doc(user.uid).set({
+                        username: user.displayName,
+                        email: user.email,
+                        rol: (user.email === "ruslanantonovow6837@rambler.ru" ? "YÖNETİCİ" : "ÜYE"),
+                        photo: user.photoURL || "https://via.placeholder.com/150"
+                    });
+                }
+            }).catch(e => document.getElementById('error-msg').innerText = e.message);
+        }
+
+        function cikisYap() { firebase.auth().signOut(); }
+
+        // Yönetici Üye Listesi Göster/Gizle
+        function toggleUserList() {
+            const box = document.getElementById('user-list-box');
+            box.classList.toggle('hidden');
+        }
+
+        function yukleKullaniciListesi() {
+            const container = document.getElementById('user-list-container');
+            container.innerHTML = "";
+            db.collection("kullanicilar").get().then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const u = doc.data();
+                    const maskEmail = u.email ? u.email.charAt(0) + "*******@" + u.email.split('@')[1] : "";
+                    
+                    let row = `<div class="user-item">
+                        <div>👤 <b>${u.username}</b><br><span style="font-size:10px; color:#aaa;">${maskEmail}</span></div>
+                        <div>
+                            Rol: <b>${u.rol}</b><br>
+                            <select onchange="rolDegistir('${doc.id}', this.value)">
+                                <option value="${u.rol}">Değiştir...</option>
+                                <option value="ÜYE">Üye Yap</option>
+                                <option value="MODERATÖR">Moderatör Yap</option>
+                                <option value="YÖNETİCİ">Yönetici Yap</option>
+                            </select>
+                        </div>
+                    </div>`;
+                    container.innerHTML += row;
+                });
             });
         }
 
-        // Çıkış
-        function cikisYap() {
-            firebase.auth().signOut();
+        function rolDegistir(uid, yeniRol) {
+            db.collection("kullanicilar").doc(uid).update({ rol: yeniRol }).then(() => {
+                alert("Rol güncellendi!");
+                yukleKullaniciListesi();
+            });
         }
 
-        // Admin Link Güncelleme
-        function apkYukle() {
-            const link = document.getElementById('apkLink').value;
-            if(!link) {
-                alert("Lütfen bir link girin patron.");
-                return;
-            }
-            document.getElementById('indirBtn').href = link;
-            alert("APK Linki başarıyla kaydedildi!");
+        function apkEkle() {
+            const ad = document.getElementById('apk-ad').value;
+            const link = document.getElementById('apk-link').value;
+            const surum = document.getElementById('apk-surum').value;
+
+            if(!ad || !link) { alert("Uygulama adı ve indirme linki zorunludur!"); return; }
+
+            db.collection("apklar").add({
+                ad: ad,
+                resim: apkPhotoBase64 || "https://via.placeholder.com/80",
+                link: link,
+                surum: surum || "1.0",
+                tarih: new Date().toLocaleDateString('tr-TR')
+            }).then(() => {
+                alert("APK Başarıyla eklendi!");
+                document.getElementById('apk-ad').value = "";
+                document.getElementById('apk-link').value = "";
+                document.getElementById('apk-surum').value = "";
+                apkListesiniGuncelle();
+            });
+        }
+
+        function apkListesiniGuncelle() {
+            const listArea = document.getElementById('apk-list-area');
+            listArea.innerHTML = "";
+            db.collection("apklar").get().then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const apk = doc.data();
+                    let item = `<div style="background:#2a2a2a; padding:10px; border-radius:6px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+                        <img src="${apk.resim}" style="width:40px; height:40px; border-radius:4px;">
+                        <div style="text-align:left; width: 140px;">
+                            <div style="font-weight:bold; font-size:13px;">${apk.ad}</div>
+                            <div style="font-size:10px; color:#aaa;">Sürüm: ${apk.surum} | ${apk.tarih}</div>
+                        </div>
+                        <a href="${apk.link}" target="_blank" style="padding:6px 12px; background:#00e5ff; color:#000; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">İNDİR</a>
+                    </div>`;
+                    listArea.innerHTML += item;
+                });
+            });
         }
     </script>
 </body>
