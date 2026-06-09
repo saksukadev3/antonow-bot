@@ -4,97 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RXC STORE</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         body { background: #ffffff; color: #000; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #fff; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card { background: #fff; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; }
         button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: #0083b0; color: white; font-weight: bold; cursor: pointer; }
-        .social-btn { width: 40px; margin-top: 15px; cursor: pointer; }
+        .footer-text { margin-top: 20px; font-size: 12px; color: #888; }
         .hidden { display: none !important; }
-        .error { color: red; font-size: 12px; margin-top: 10px; }
-        .security-notice { font-size: 11px; color: #666; margin-bottom: 15px; line-height: 1.4; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .footer-text { margin-top: 20px; font-size: 12px; color: #888; font-weight: 600; }
+        .role-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: #fff; font-size: 12px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
+    <!-- GİRİŞ EKRANI -->
     <div id="auth-card" class="card">
-        <div class="security-notice">
-            🔒 <b>Güvenlik Sözleşmesi:</b> Sitemize kayıt olan kullanıcıların hesap güvenliği sağlanır. Kayıt olarak kullanım şartlarını kabul etmiş olursunuz.
+        <div style="font-size: 11px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            🔒 <b>Güvenlik:</b> RXC STORE şartlarını kabul edersiniz.
         </div>
-
-        <h2 id="auth-title">KAYIT OL</h2>
-        <input type="text" id="reg-username" placeholder="Kullanıcı Adı">
+        <h2 id="title">KAYIT OL</h2>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
         <input type="email" id="email" placeholder="E-posta">
         <input type="password" id="pass" placeholder="Şifre">
+        <button id="main-btn" onclick="authAction()">KAYIT OL</button>
+        <button style="background:#555" onclick="toggleAuth()">Giriş Yap'a Geç</button>
         
-        <button id="auth-btn" onclick="kayitOlAction()">KAYIT OL</button>
-        <button style="background: #555;" onclick="toggleMod()">Giriş Yap / Kayıt Ol Değiştir</button>
-        
-        <div style="margin-top: 20px;">
-            <p style="font-size: 12px; color: #666;">Google ile devam et:</p>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" 
-                 class="social-btn" onclick="googleLogin()">
+        <div style="margin-top:20px;">
+            <p style="font-size:12px;">Google ile giriş:</p>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:30px; cursor:pointer;" onclick="googleLogin()">
         </div>
-        <div id="error-msg" class="error"></div>
-
         <div class="footer-text">©RXC STORE</div>
     </div>
 
-    <div id="user-card" class="card hidden">
+    <!-- MAĞAZA EKRANI -->
+    <div id="app-card" class="card hidden">
         <h2>RXC MAĞAZA</h2>
-        <div id="apk-list-area"></div>
-        <button onclick="cikisYap()">ÇIKIŞ YAP</button>
-        <div class="footer-text" style="margin-top:15px;">©RXC STORE</div>
+        <div id="role-view" class="role-badge" style="background:#d32f2f">ÜYE</div>
+        <div id="apk-list" style="margin: 20px 0; text-align: left;"></div>
+        <button style="background:#d32f2f" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
+        <div class="footer-text">©RXC STORE</div>
     </div>
 
     <script>
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
             authDomain: "antonow-bot.firebaseapp.com",
             projectId: "antonow-bot",
             storageBucket: "antonow-bot.firebasestorage.app",
             messagingSenderId: "883455416719",
-            appId: "1:883455416719:web:57a4a65e4c32b99e3393fa",
-            measurementId: "G-1TS5GEWDX4"
+            appId: "1:883455416719:web:57a4a65e4c32b99e3393fa"
         };
-        
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(config);
         const db = firebase.firestore();
         let isLogin = false;
 
-        function toggleMod() {
+        function toggleAuth() {
             isLogin = !isLogin;
-            document.getElementById('auth-title').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
-            document.getElementById('auth-btn').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
-            document.getElementById('reg-username').classList.toggle('hidden', isLogin);
+            document.getElementById('title').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
+            document.getElementById('main-btn').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
+            document.getElementById('username').classList.toggle('hidden', isLogin);
         }
 
-        function kayitOlAction() {
+        function authAction() {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            if(isLogin) firebase.auth().signInWithEmailAndPassword(e, p).catch(err => document.getElementById('error-msg').innerText = err.message);
-            else firebase.auth().createUserWithEmailAndPassword(e, p).then(c => db.collection("kullanicilar").doc(c.user.uid).set({username: document.getElementById('reg-username').value, rol: 'ÜYE'})).catch(err => document.getElementById('error-msg').innerText = err.message);
+            if(isLogin) firebase.auth().signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
+            else firebase.auth().createUserWithEmailAndPassword(e, p).then(c => db.collection("kullanicilar").doc(c.user.uid).set({username: document.getElementById('username').value, rol: 'ÜYE'}));
         }
 
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider).catch(err => document.getElementById('error-msg').innerText = err.message);
-        }
+        function googleLogin() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('auth-card').classList.add('hidden');
-                document.getElementById('user-card').classList.remove('hidden');
+                document.getElementById('app-card').classList.remove('hidden');
+                loadContent();
             } else {
                 document.getElementById('auth-card').classList.remove('hidden');
-                document.getElementById('user-card').classList.add('hidden');
+                document.getElementById('app-card').classList.add('hidden');
             }
         });
 
-        function cikisYap() { firebase.auth().signOut(); location.reload(); }
+        function loadContent() {
+            db.collection("apklar").get().then(snap => {
+                const list = document.getElementById('apk-list');
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const apk = d.data();
+                    list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;"><b>${apk.ad}</b> <a href="${apk.link}">İNDİR</a></div>`;
+                });
+            });
+        }
     </script>
 </body>
 </html>
