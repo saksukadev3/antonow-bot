@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RXC STORE</title>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -13,65 +12,47 @@
         .card { background: #fff; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; }
         button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: #0083b0; color: white; font-weight: bold; cursor: pointer; }
-        .footer-text { margin-top: 20px; font-size: 12px; color: #888; }
         .hidden { display: none !important; }
-        .role-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: #fff; font-size: 12px; margin-bottom: 10px; }
+        .role-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: #fff; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <!-- GİRİŞ EKRANI -->
     <div id="auth-card" class="card">
-        <div style="font-size: 11px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-            🔒 <b>Güvenlik:</b> RXC STORE şartlarını kabul edersiniz.
-        </div>
-        <h2 id="title">KAYIT OL</h2>
-        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <h2 id="title">GİRİŞ YAP</h2>
         <input type="email" id="email" placeholder="E-posta">
         <input type="password" id="pass" placeholder="Şifre">
-        <button id="main-btn" onclick="authAction()">KAYIT OL</button>
-        <button style="background:#555" onclick="toggleAuth()">Giriş Yap'a Geç</button>
-        
+        <button id="main-btn" onclick="authAction()">GİRİŞ YAP</button>
         <div style="margin-top:20px;">
             <p style="font-size:12px;">Google ile giriş:</p>
             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:30px; cursor:pointer;" onclick="googleLogin()">
         </div>
-        <div class="footer-text">©RXC STORE</div>
     </div>
 
-    <!-- MAĞAZA EKRANI -->
-    <div id="app-card" class="card hidden">
+    <!-- ÜYE MAĞAZA -->
+    <div id="user-card" class="card hidden">
         <h2>RXC MAĞAZA</h2>
-        <div id="role-view" class="role-badge" style="background:#d32f2f">ÜYE</div>
-        <div id="apk-list" style="margin: 20px 0; text-align: left;"></div>
+        <div class="role-badge" style="background:#d32f2f">ÜYE</div>
         <button style="background:#d32f2f" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
-        <div class="footer-text">©RXC STORE</div>
+    </div>
+
+    <!-- YÖNETİCİ PANELİ -->
+    <div id="admin-card" class="card hidden">
+        <h2>👑 YÖNETİCİ PANELİ</h2>
+        <div class="role-badge" style="background:#00bcd4">YÖNETİCİ</div>
+        <button style="background:#2e7d32" onclick="alert('Admin özellikleri aktif')">APK YÖNETİMİ</button>
+        <button style="background:#d32f2f" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
     </div>
 
     <script>
-        const config = {
-            apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
-            authDomain: "antonow-bot.firebaseapp.com",
-            projectId: "antonow-bot",
-            storageBucket: "antonow-bot.firebasestorage.app",
-            messagingSenderId: "883455416719",
-            appId: "1:883455416719:web:57a4a65e4c32b99e3393fa"
-        };
+        const config = { apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU", authDomain: "antonow-bot.firebaseapp.com", projectId: "antonow-bot", storageBucket: "antonow-bot.firebasestorage.app", messagingSenderId: "883455416719", appId: "1:883455416719:web:57a4a65e4c32b99e3393fa" };
         firebase.initializeApp(config);
         const db = firebase.firestore();
-        let isLogin = false;
-
-        function toggleAuth() {
-            isLogin = !isLogin;
-            document.getElementById('title').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
-            document.getElementById('main-btn').innerText = isLogin ? "GİRİŞ YAP" : "KAYIT OL";
-            document.getElementById('username').classList.toggle('hidden', isLogin);
-        }
 
         function authAction() {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            if(isLogin) firebase.auth().signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
-            else firebase.auth().createUserWithEmailAndPassword(e, p).then(c => db.collection("kullanicilar").doc(c.user.uid).set({username: document.getElementById('username').value, rol: 'ÜYE'}));
+            firebase.auth().signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
         function googleLogin() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
@@ -79,24 +60,21 @@
         firebase.auth().onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('auth-card').classList.add('hidden');
-                document.getElementById('app-card').classList.remove('hidden');
-                loadContent();
+                // ROL KONTROLÜ: Admin maili mi veya Firestore'da yönetici mi?
+                db.collection("kullanicilar").doc(user.uid).get().then(doc => {
+                    const data = doc.data();
+                    if (user.email === "ruslanantonovow6837@rambler.ru" || (data && data.rol === "YÖNETİCİ")) {
+                        document.getElementById('admin-card').classList.remove('hidden');
+                    } else {
+                        document.getElementById('user-card').classList.remove('hidden');
+                    }
+                });
             } else {
                 document.getElementById('auth-card').classList.remove('hidden');
-                document.getElementById('app-card').classList.add('hidden');
+                document.getElementById('user-card').classList.add('hidden');
+                document.getElementById('admin-card').classList.add('hidden');
             }
         });
-
-        function loadContent() {
-            db.collection("apklar").get().then(snap => {
-                const list = document.getElementById('apk-list');
-                list.innerHTML = "";
-                snap.forEach(d => {
-                    const apk = d.data();
-                    list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;"><b>${apk.ad}</b> <a href="${apk.link}">İNDİR</a></div>`;
-                });
-            });
-        }
     </script>
 </body>
 </html>
