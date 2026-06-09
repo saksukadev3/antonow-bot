@@ -1,65 +1,11 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RXC STORE - Giriş</title>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <style>
-        body { background: #121212; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: #fff; }
-        button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #00e5ff; color: #000; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .social-login { display: flex; justify-content: space-around; margin-top: 20px; }
-        .social-btn { width: 50px; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <h2>RXC STORE</h2>
-        <input type="email" id="email" placeholder="E-posta adresini gir">
-        <input type="password" id="pass" placeholder="Şifreni gir">
-        <button onclick="login()">GİRİŞ YAP</button>
-
-        <div class="social-login">
-            <!-- Buraya logolarını ekledim -->
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="social-btn" onclick="googleLogin()" title="Google ile Giriş">
-            <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" class="social-btn" onclick="emailLogin()" title="Mail ile Giriş">
-        </div>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU",
-            authDomain: "antonow-bot.firebaseapp.com",
-            projectId: "antonow-bot",
-            storageBucket: "antonow-bot.firebasestorage.app",
-            messagingSenderId: "883455416719",
-            appId: "1:883455416719:web:57a4a65e4c32b99e3393fa",
-            measurementId: "G-1TS5GEWDX4"
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            firebase.auth().signInWithEmailAndPassword(email, pass)
-            .then((user) => {
-                if(user.user.email === "ruslanantonovow6837@rambler.ru") {
-                    alert("Admin paneline yönlendiriliyorsun...");
-                } else {
-                    alert("Giriş başarılı! Hoş geldin.");
-                }
-            })
-            .catch(e => alert("Hata: " + e.message));
-        }
-
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider);
-        }
-    </script>
-</body>
-</html>
+// Giriş Başarılı Olduğunda (Google veya Mail)
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    // Admin mi diye kontrol et
+    if (user.email === "ruslanantonovow6837@rambler.ru") {
+      window.location.href = "admin.html"; // Admin paneline git
+    } else {
+      window.location.href = "dashboard.html"; // Normal kullanıcı paneline git
+    }
+  }
+});
