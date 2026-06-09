@@ -9,72 +9,143 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         body { background: #ffffff; color: #000; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #fff; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; }
-        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: #0083b0; color: white; font-weight: bold; cursor: pointer; }
+        .card { background: #fff; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
-        .role-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: #fff; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
+        input, textarea { width: 90%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 8px; font-family: sans-serif; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; background: #0083b0; color: white; font-weight: bold; cursor: pointer; }
+        .footer-text { margin-top: 20px; font-size: 12px; color: #888; }
+        
+        /* APK Kutusu Tasarımı */
+        .apk-card { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left; background: #fafafa; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .apk-img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+        .apk-details { width: 100%; }
+        
+        /* Yeşil İndir Butonu */
+        .download-btn { background: #28a745; color: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; width: 80%; margin: 0 auto; }
+        .download-btn:hover { background: #218838; }
     </style>
 </head>
 <body>
 
-    <!-- GİRİŞ EKRANI -->
-    <div id="auth-card" class="card">
-        <h2 id="title">GİRİŞ YAP</h2>
+    <div id="loading" class="card"><h2>Yükleniyor...</h2></div>
+
+    <div id="auth-card" class="card hidden">
+        <h2>GİRİŞ YAP</h2>
         <input type="email" id="email" placeholder="E-posta">
         <input type="password" id="pass" placeholder="Şifre">
-        <button id="main-btn" onclick="authAction()">GİRİŞ YAP</button>
-        <div style="margin-top:20px;">
-            <p style="font-size:12px;">Google ile giriş:</p>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:30px; cursor:pointer;" onclick="googleLogin()">
-        </div>
+        <button onclick="authAction()">GİRİŞ YAP</button>
+        <button onclick="googleLogin()" style="background:#db4437; margin-top:10px;">Google ile Giriş</button>
+        <div class="footer-text">©RXC STORE</div>
     </div>
 
-    <!-- ÜYE MAĞAZA -->
-    <div id="user-card" class="card hidden">
-        <h2>RXC MAĞAZA</h2>
-        <div class="role-badge" style="background:#d32f2f">ÜYE</div>
-        <button style="background:#d32f2f" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
+    <div id="user-panel" class="card hidden">
+        <h2>🛍️ RXC MAĞAZA</h2>
+        <div style="font-size:12px; color:#666;">Hoş geldin, Üye.</div>
+        <div id="user-apk-list"></div>
+        <button style="background:#d32f2f; margin-top:15px;" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
+        <div class="footer-text">©RXC STORE</div>
     </div>
 
-    <!-- YÖNETİCİ PANELİ -->
-    <div id="admin-card" class="card hidden">
+    <div id="admin-panel" class="card hidden">
         <h2>👑 YÖNETİCİ PANELİ</h2>
-        <div class="role-badge" style="background:#00bcd4">YÖNETİCİ</div>
-        <button style="background:#2e7d32" onclick="alert('Admin özellikleri aktif')">APK YÖNETİMİ</button>
+        
+        <div style="border: 1px dashed #0083b0; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <h3>APK Ekle</h3>
+            <input type="text" id="apk-ad" placeholder="Uygulama ismi">
+            <textarea id="apk-aciklama" placeholder="Uygulama Açıklaması"></textarea>
+            <input type="text" id="apk-link" placeholder="Uygulama indirme Link">
+            <div style="font-size:11px; color:#666; text-align:left; margin:6px 0;">Site içi profil resmi seç:</div>
+            <input type="file" id="apk-resim" accept="image/*" style="border:none; padding:0;">
+            <button onclick="apkEkleAction()" style="background:#28a745; margin-top:10px;">YÜKLE</button>
+        </div>
+
         <button style="background:#d32f2f" onclick="firebase.auth().signOut()">ÇIKIŞ YAP</button>
+        <div class="footer-text">©RXC STORE</div>
     </div>
 
     <script>
         const config = { apiKey: "AIzaSyDw09ubEEogXBCR0P_zi8bXRW7I9kItEIU", authDomain: "antonow-bot.firebaseapp.com", projectId: "antonow-bot", storageBucket: "antonow-bot.firebasestorage.app", messagingSenderId: "883455416719", appId: "1:883455416719:web:57a4a65e4c32b99e3393fa" };
-        firebase.initializeApp(config);
+        if (!firebase.apps.length) firebase.initializeApp(config);
         const db = firebase.firestore();
 
-        function authAction() {
-            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            firebase.auth().signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
-        }
-
-        function googleLogin() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-
         firebase.auth().onAuthStateChanged(user => {
+            document.getElementById('loading').classList.add('hidden');
             if(user) {
-                document.getElementById('auth-card').classList.add('hidden');
-                // ROL KONTROLÜ: Admin maili mi veya Firestore'da yönetici mi?
                 db.collection("kullanicilar").doc(user.uid).get().then(doc => {
-                    const data = doc.data();
-                    if (user.email === "ruslanantonovow6837@rambler.ru" || (data && data.rol === "YÖNETİCİ")) {
-                        document.getElementById('admin-card').classList.remove('hidden');
+                    const data = doc.data() || {rol: 'ÜYE'};
+                    const isAdmin = (user.email === "ruslanantonovow6837@rambler.ru" || data.rol === "YÖNETİCİ");
+                    
+                    if(isAdmin) {
+                        document.getElementById('admin-panel').classList.remove('hidden');
+                        document.getElementById('user-panel').classList.add('hidden');
                     } else {
-                        document.getElementById('user-card').classList.remove('hidden');
+                        document.getElementById('user-panel').classList.remove('hidden');
+                        document.getElementById('admin-panel').classList.add('hidden');
+                        uyeApkListesiniYukle();
                     }
+                    document.getElementById('auth-card').classList.add('hidden');
                 });
             } else {
                 document.getElementById('auth-card').classList.remove('hidden');
-                document.getElementById('user-card').classList.add('hidden');
-                document.getElementById('admin-card').classList.add('hidden');
+                document.getElementById('user-panel').classList.add('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
             }
         });
+
+        function apkEkleAction() {
+            const ad = document.getElementById('apk-ad').value;
+            const aciklama = document.getElementById('apk-aciklama').value;
+            const link = document.getElementById('apk-link').value;
+            const fileInput = document.getElementById('apk-resim');
+
+            if(!ad || !link || !fileInput.files[0]) {
+                alert("Lütfen isim, link ve görsel alanlarını doldurun!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                db.collection("apklar").add({
+                    ad: ad,
+                    aciklama: aciklama,
+                    link: link,
+                    resim: e.target.result,
+                    tarih: Date.now()
+                }).then(() => {
+                    alert("Uygulama başarıyla yüklendi!");
+                    document.getElementById('apk-ad').value = "";
+                    document.getElementById('apk-aciklama').value = "";
+                    document.getElementById('apk-link').value = "";
+                    fileInput.value = "";
+                }).catch(err => alert(err.message));
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+
+        function uyeApkListesiniYukle() {
+            const listeDiv = document.getElementById('user-apk-list');
+            listeDiv.innerHTML = "";
+            db.collection("apklar").orderBy("tarih", "desc").get().then(snap => {
+                snap.forEach(doc => {
+                    const apk = doc.data();
+                    listeDiv.innerHTML += `
+                        <div class="apk-card">
+                            <img src="${apk.resim}" class="apk-img" alt="Profil">
+                            <div class="apk-details">
+                                <b style="font-size:16px;">${apk.ad}</b>
+                                <p style="font-size:13px; color:#555; margin:5px 0;">${apk.aciklama}</p>
+                            </div>
+                            <a href="${apk.link}" class="download-btn">
+                                ⬇️ İndir
+                            </a>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function authAction() { firebase.auth().signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message)); }
+        function googleLogin() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert(e.message)); }
     </script>
 </body>
 </html>
